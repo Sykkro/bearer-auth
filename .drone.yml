@@ -9,3 +9,20 @@ steps:
     - env GOOS=linux CGO_ENABLED=0 GOARCH=arm GO111MODULE=on go build -o build/bearer-auth-arm .
     - env GOOS=linux CGO_ENABLED=0 GOARCH=arm64 GO111MODULE=on go build -o build/bearer-auth-arm64 .
     - env GOOS=linux CGO_ENABLED=0 GOARCH=amd64 GO111MODULE=on go build -o build/bearer-auth-amd64 .
+
+- name: publish
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
+    files: build/*
+    title: Release ${DRONE_TAG}
+    checksum:
+      - md5
+      - sha1
+      - sha256
+      - sha512
+      - adler32
+      - crc32
+  when:
+    event: tag
