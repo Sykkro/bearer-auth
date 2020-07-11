@@ -1,0 +1,74 @@
+name: buildx
+
+on:
+  push:
+    branches:
+    - master
+    tags:
+    - v*
+
+jobs:
+  buildx:
+    
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_REPO: sykkro/bearer-auth
+      DOCKER_PLATFORMS: "linux/amd64,linux/arm64,linux/armv7"
+      DOCKER_TAG: latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Prepare
+      id: prepare
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          echo ::set-env name=DOCKER_TAG::${GITHUB_REF#refs/tags/}
+        fi
+
+    - name: Set up Docker Buildx
+      uses: crazy-max/ghaction-docker-buildx@v3
+      
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      id: cache
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Docker Buildx (build)
+      run: |
+        docker buildx build \
+        --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+        --platform=${{ DOCKER_PLATFORMS }} \
+        --output "type=image,push=false" \
+        -t ${{ DOCKER_REPO }}:${{ DOCKER_TAG }} .
+
+    - name: Docker Login
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+
+    - name: Docker Buildx (push)
+      run: |
+        docker buildx build \
+        --cache-from "type=local,src=/tmp/.buildx-cache" \
+        --platform=${{ DOCKER_PLATFORMS }} \
+        --output "type=image,push=true" \
+        -t ${{ DOCKER_REPO }}:${{ DOCKER_TAG }} .
+
+    - name: Docker Check Manifest
+      run: |
+        docker run --rm mplatform/mquery ${{ DOCKER_REPO }}:${{ DOCKER_TAG }}
+        
+    - name: Clear
+      if: always()
+      run: |
+        rm -f ${HOME}/.docker/config.json
