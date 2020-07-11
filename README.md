@@ -5,11 +5,17 @@
 ![alt text](.res/logo.png "bearer-auth")
 
 [![Build Status](https://cloud.drone.io/api/badges/Sykkro/bearer-auth/status.svg)](https://cloud.drone.io/Sykkro/bearer-auth)
+[![buildx](https://github.com/Sykkro/bearer-auth/workflows/buildx/badge.svg)](https://github.com/Sykkro/bearer-auth/actions?query=workflow%3Abuildx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sykkro/bearer-auth)](https://goreportcard.com/report/github.com/sykkro/bearer-auth)
-![GitHub All Releases](https://img.shields.io/github/downloads/sykkro/bearer-auth/total)
-[![Docker Automated](https://img.shields.io/docker/cloud/automated/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
-[![Docker Build](https://img.shields.io/docker/cloud/build/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
+[![GitHub All Releases](https://img.shields.io/github/downloads/sykkro/bearer-auth/total)](https://github.com/Sykkro/bearer-auth/releases)
+
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
 [![Docker Pulls](https://img.shields.io/docker/pulls/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
+[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
+
+<!--
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
+[![Docker Build](https://img.shields.io/docker/cloud/build/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)-->
 
 </div>
 
