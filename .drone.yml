@@ -7,7 +7,9 @@ steps:
   image: golang:1.13-alpine
   commands:
   - mkdir build
-  - env GOOS=linux CGO_ENABLED=0 GOARCH=arm GO111MODULE=on go build -o build/bearer-auth-arm .
+  - env GOOS=linux CGO_ENABLED=0 GOARCH=arm GOARM=5 GO111MODULE=on go build -o build/bearer-auth-arm .
+  - env GOOS=linux CGO_ENABLED=0 GOARCH=arm GOARM=6 GO111MODULE=on go build -o build/bearer-auth-arm .
+  - env GOOS=linux CGO_ENABLED=0 GOARCH=arm GOARM=7 GO111MODULE=on go build -o build/bearer-auth-arm .
   - env GOOS=linux CGO_ENABLED=0 GOARCH=arm64 GO111MODULE=on go build -o build/bearer-auth-arm64 .
   - env GOOS=linux CGO_ENABLED=0 GOARCH=amd64 GO111MODULE=on go build -o build/bearer-auth-amd64 .
 
