@@ -12,6 +12,7 @@
 [![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
 [![Docker Pulls](https://img.shields.io/docker/pulls/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
+[![](https://img.shields.io/microbadger/layers/sykkro/bearer-auth)](https://microbadger.com/images/sykkro/bearer-auth)
 
 <!--
 [![Docker Automated](https://img.shields.io/docker/cloud/automated/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
