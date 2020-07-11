@@ -1,0 +1,19 @@
+FROM golang:1.13-alpine as builder
+
+# Setup
+RUN mkdir -p /go/src/github.com/sykkro/bearer-auth
+WORKDIR /go/src/github.com/sykkro/bearer-auth
+
+# Add libraries
+RUN apk add --no-cache git
+
+# Copy & build
+ADD . /go/src/github.com/sykkro/bearer-auth/
+RUN GOOS=linux CGO_ENABLED=0 GOARCH=arm64 GO111MODULE=on go build -a -installsuffix nocgo -o /bearer-auth github.com/sykkro/bearer-auth
+
+# Copy into scratch container
+FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /bearer-auth ./
+EXPOSE 8000
+ENTRYPOINT ["./bearer-auth"]
