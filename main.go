@@ -22,8 +22,8 @@ type flags struct {
 }
 
 type controller struct {
-	logger  *log.Logger
 	healthy int64
+	logger  *log.Logger
 }
 
 var opts = &flags{}
