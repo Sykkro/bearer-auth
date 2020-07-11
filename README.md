@@ -36,15 +36,9 @@ Feel free to share suggestions or contribute with improvements/some refactoring.
 
 ```bash
 # multi-platform build with buildx
-docker buildx build --platform=linux/amd64,linux/arm64,linux/armv7  -t sykkro/bearer-auth:latest .
+docker buildx build \
+--platform=linux/amd64,linux/arm/v5,linux/arm/v6,linux/arm/v7,linux/arm64 \
+--output "type=image,push=false" \
+-t sykkro/bearer-auth:latest .
 
-```
-
-``` bash
-# AMD64
-docker build -t sykkro/bearer-auth:amd64-latest -f Dockerfile.amd64 .
-# ARM
-docker build -t sykkro/bearer-auth:arm-latest -f Dockerfile.arm .
-# ARM64
-docker build -t sykkro/bearer-auth:arm64-latest -f Dockerfile.arm64 .
 ```

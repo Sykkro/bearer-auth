@@ -9,16 +9,12 @@ on:
 
 env:
   DOCKER_REPO: sykkro/bearer-auth
-  DOCKER_PLATFORMS: "linux/amd64,linux/arm64,linux/armv7"
+  DOCKER_PLATFORMS: "linux/amd64,linux/arm/v5,linux/arm/v6,linux/arm/v7,linux/arm64"
   DOCKER_TAG: latest
 
 jobs:
   buildx:
-    
     runs-on: ubuntu-latest
-
-    
-    
     steps:
     - name: Checkout
       uses: actions/checkout@v2

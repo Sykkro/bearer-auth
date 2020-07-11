@@ -1,9 +1,14 @@
-
 FROM --platform=$BUILDPLATFORM golang:1.13-alpine as base
 
 # Prepare base images with go opts for each target architecture
+FROM base AS base-armv5
+ENV GO_ARCH_OPS "CGO_ENABLED=0 GOARCH=arm GOARM=5"
+
+FROM base AS base-armv6
+ENV GO_ARCH_OPS "CGO_ENABLED=0 GOARCH=arm GOARM=6"
+
 FROM base AS base-armv7
-ENV GO_ARCH_OPS "CGO_ENABLED=0 GOARCH=arm"
+ENV GO_ARCH_OPS "CGO_ENABLED=0 GOARCH=arm GOARM=7"
 
 FROM base AS base-arm64
 ENV GO_ARCH_OPS "CGO_ENABLED=0 GOARCH=arm64"
@@ -13,7 +18,8 @@ ENV GO_ARCH_OPS "CGO_ENABLED=0 GOARCH=amd64"
 
 # Use the target architecture base image as builder target
 ARG TARGETARCH
-FROM base-$TARGETARCH AS builder
+ARG TARGETVARIANT
+FROM base-$TARGETARCH$TARGETVARIANT AS builder
 
 # Setup
 RUN mkdir -p /go/src/github.com/sykkro/bearer-auth
