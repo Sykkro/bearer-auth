@@ -7,15 +7,17 @@ on:
     tags:
     - v*
 
+env:
+  DOCKER_REPO: sykkro/bearer-auth
+  DOCKER_PLATFORMS: "linux/amd64,linux/arm64,linux/armv7"
+  DOCKER_TAG: latest
+
 jobs:
   buildx:
     
     runs-on: ubuntu-latest
 
-    env:
-      DOCKER_REPO: sykkro/bearer-auth
-      DOCKER_PLATFORMS: "linux/amd64,linux/arm64,linux/armv7"
-      DOCKER_TAG: latest
+    
     
     steps:
     - name: Checkout
@@ -45,9 +47,9 @@ jobs:
         docker buildx build \
         --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
-        --platform=${{ DOCKER_PLATFORMS }} \
+        --platform=${{ env.DOCKER_PLATFORMS }} \
         --output "type=image,push=false" \
-        -t ${{ DOCKER_REPO }}:${{ DOCKER_TAG }} .
+        -t ${{ env.DOCKER_REPO }}:${{ env.DOCKER_TAG }} .
 
     - name: Docker Login
       env:
@@ -60,13 +62,13 @@ jobs:
       run: |
         docker buildx build \
         --cache-from "type=local,src=/tmp/.buildx-cache" \
-        --platform=${{ DOCKER_PLATFORMS }} \
+        --platform=${{ env.DOCKER_PLATFORMS }} \
         --output "type=image,push=true" \
-        -t ${{ DOCKER_REPO }}:${{ DOCKER_TAG }} .
+        -t ${{ env.DOCKER_REPO }}:${{ env.DOCKER_TAG }} .
 
     - name: Docker Check Manifest
       run: |
-        docker run --rm mplatform/mquery ${{ DOCKER_REPO }}:${{ DOCKER_TAG }}
+        docker run --rm mplatform/mquery ${{ env.DOCKER_REPO }}:${{ env.DOCKER_TAG }}
         
     - name: Clear
       if: always()
