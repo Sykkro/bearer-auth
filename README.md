@@ -1,8 +1,8 @@
 # bearer-auth
 
 [![Build Status](https://cloud.drone.io/api/badges/Sykkro/bearer-auth/status.svg)](https://cloud.drone.io/Sykkro/bearer-auth)
-[![Docker Automated](https://img.shields.io/docker/automated/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
-[![Docker Build](https://img.shields.io/docker/build/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
+[![Docker Build](https://img.shields.io/docker/cloud/build/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
 [![Docker Pulls](https://img.shields.io/docker/pulls/sykkro/bearer-auth)](https://hub.docker.com/repository/docker/sykkro/bearer-auth)
 
 ## About 
