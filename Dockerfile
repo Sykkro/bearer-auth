@@ -36,5 +36,5 @@ RUN env ${GO_ARCH_OPS} GOOS=linux GO111MODULE=on go build -a -installsuffix nocg
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /bearer-auth ./
-EXPOSE 8000
+EXPOSE 8080
 ENTRYPOINT ["./bearer-auth"]
