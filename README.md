@@ -32,9 +32,20 @@ basically acting as a logging MITM proxy for authenticated users.
 *Please note:* This is a WIP project and I have zero knowledge in go, being these my very first lines of code in this language.
 Feel free to share suggestions or contribute with improvements/some refactoring. 🛠
 
+# Running
+
+Launch with:
+```
+./main --config=test/config.yaml
+```
 # Building
 
+## For local run
+```bash
+go build main.go
+```
 
+## Docker image
 ```bash
 # multi-platform build with buildx
 docker buildx build \

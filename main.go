@@ -7,9 +7,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
+	"gopkg.in/yaml.v2"
 )
 
 type flags struct {
@@ -26,30 +29,88 @@ type controller struct {
 	logger  *log.Logger
 }
 
+// Binding type to be loaded in the configuration
+// (must be exported for yaml unmarshalling)
+type Binding struct {
+	User           string `yaml:"user"`
+	ServiceAccount string `yaml:"service-account"`
+	UserAccount    string `yaml:"account"`
+}
+
+// HeadersConfig type to be loaded in the configuration
+// (must be exported for yaml unmarshalling)
+type HeadersConfig struct {
+	AuthUser        string   `yaml:"auth-user"`
+	ToForward       []string `yaml:"to-forward"`
+	toForwardOnce   sync.Once
+	toForwardLookup map[string]bool // for performance reasons
+}
+
+// ShouldForward returns true if the provided header should be kept/forwarded
+// this method is memoized over ToForward slices
+func (hc *HeadersConfig) ShouldForward(header string) bool {
+	hc.toForwardOnce.Do(func() {
+		hc.toForwardLookup = make(map[string]bool)
+		for _, v := range hc.ToForward {
+			hc.toForwardLookup[v] = true
+		}
+	})
+	return hc.toForwardLookup[header]
+}
+
+// ServerConfig type to be loaded in the configuration
+// (must be exported for yaml unmarshalling)
+type ServerConfig struct {
+	Host    string        `yaml:"host" envconfig:"SERVER_HOST"`
+	Port    int           `yaml:"port" envconfig:"SERVER_PORT"`
+	Headers HeadersConfig `yaml:"headers"`
+}
+
+// Config type to be loaded in the configuration
+// (must be exported for yaml unmarshalling)
+type Config struct {
+	Server   ServerConfig `yaml:"server"`
+	Bindings []Binding    `yaml:"bindings"`
+}
+
 var opts = &flags{}
+var configs = &Config{}
+
+var cfg Config
 
 func main() {
 
-	// Load command line flags
-	flag.StringVar(&opts.listenAddress, "listen-address", "0.0.0.0", "HTTP listen address")
-	flag.IntVar(&opts.listenPort, "listen-port", 8000, "HTTP listen port")
-	flag.StringVar(&opts.userHeader, "auth-user-header", "X-Forwarded-User", "Request header name that will hold authenticated users info")
-	fwdFlag := flag.String("forward-headers", "X-Forwarded-User", "Which headers should be kept/forwarded (comma-separated)")
+	configFile := flag.String("config", "config.yaml", "configuration file path")
 	flag.Parse()
 
-	// convert comma-separated flag to a map of [header key, true]
-	fwdHeaders := strings.Split(*fwdFlag, ",")
-	opts.forwardHeaders = make(map[string]bool)
-	for i := 0; i < len(fwdHeaders); i++ {
-		opts.forwardHeaders[fwdHeaders[i]] = true
-	}
+	readConfig(*configFile, &cfg)
+	readEnv(&cfg)
 
-	serve()
+	log.Printf("cfg : %+v\n", &cfg)
+	serve(&cfg)
 }
 
-func serve() {
+func readConfig(path string, cfg *Config) {
+	file, _ := os.Open(path)
+	defer file.Close()
+	decoder := yaml.NewDecoder(file)
+	err := decoder.Decode(&cfg)
 
-	serveAddress := opts.listenAddress + ":" + strconv.Itoa(opts.listenPort)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+}
+
+func readEnv(cfg *Config) {
+	err := envconfig.Process("", cfg)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+}
+
+func serve(cfg *Config) {
+
+	serveAddress := cfg.Server.Host + ":" + strconv.Itoa(cfg.Server.Port)
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	c := &controller{logger: logger}
 
@@ -68,18 +129,20 @@ func serve() {
 func (c *controller) handler(w http.ResponseWriter, r *http.Request) {
 
 	hs := make(map[string][]string)
+	hc := &cfg.Server.Headers
 
-	if opts.forwardHeaders["Host"] {
+	if hc.ShouldForward("Host") {
 		hs["Host"] = []string{r.Host}
 	}
 	for k, v := range r.Header {
-		if opts.forwardHeaders[k] {
+		if hc.ShouldForward(k) {
 			hs[k] = v
 		}
 	}
-	users, hasHeader := r.Header[opts.userHeader]
+	users, hasHeader := r.Header[hc.AuthUser]
 
 	if !hasHeader {
+		// TODO: check if this is the desired behaviour (or if should be configured)
 		c.reject(w)
 	} else {
 		c.doAuth(w, users, hs, r.Host, r.RemoteAddr)
