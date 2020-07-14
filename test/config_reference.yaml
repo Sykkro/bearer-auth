@@ -1,0 +1,24 @@
+# Server configuration
+server:
+  host: 0.0.0.0 # server listen address (override with env variable SERVER_HOST)
+  port: 8080 # server listen port (override with env variable SERVER_PORT)
+
+  headers:
+    auth-user: X-Forwarded-User # input header to be used for extracting auth user
+    impersonator-token: /var/run/secrets/kubernetes.io/serviceaccount/token # path for impersonator service account token
+    to-forward: # additional headers to be kept/forwarded from the original request
+      - X-Forwarded-User
+
+# User bindings configuration
+bindings: [
+
+  # bindings entry format:
+  #
+  # - user: userA@gmail.com # user sent via the configured server.headers.auth-user header
+  #   service-account: admin-account # service account to be impersonated
+  #
+  # - user: user B # similar example, but this time for a user account bearer token
+  #   account: readonly-account # user account to be impersonated
+  #
+
+]

@@ -21,13 +21,14 @@
 </div>
 
 # About 
-Traefik forward-auth middleware to inject bearer tokens for authenticated users.
+Traefik forward-auth middleware to impersonate kubernetes user/service accounts for authenticated users.
 
-Conceptually, this is a simple HTTP server that runs on port 8000 by default and processes user tokens via HTTP headers.
-The end purpose is to serve as an enrichement middleware chained after `thomseddon/traefik-forward-auth`, mapping `X-Forwarded-User` users to bearer tokens to be injected via `Authentication: Bearer <token>` headers.
+> *WARNING* this is currently in POC phase, so expect things to break or not work at all as you'd expect
 
-This is currently in POC phase, and the only thing this is doing right now is intercepting authenticated users and logging some stuff,
-basically acting as a logging MITM proxy for authenticated users.
+Conceptually, this is a simple HTTP server that runs on port 8000 by default and processes user ids via HTTP headers.
+The end purpose is to serve as an enrichement middleware chained after `thomseddon/traefik-forward-auth`, mapping `X-Forwarded-User` users to configured impersonations, by sending a (pre-configured, pod-mounted) impersonator bearer token with `Authentication: Bearer <token>` and impersonated account name with `Impersonate-User` in the response HTTP headers.
+
+Please refer to [this file](test/config_reference.yaml) for configuration guidelines.
 
 *Please note:* This is a WIP project and I have zero knowledge in go, being these my very first lines of code in this language.
 Feel free to share suggestions or contribute with improvements/some refactoring. 🛠
@@ -36,8 +37,14 @@ Feel free to share suggestions or contribute with improvements/some refactoring.
 
 Launch with:
 ```
-./main --config=test/config.yaml
+./main --config=test/test_config.yaml
 ```
+
+Test user impersonation with:
+```
+curl -i http://localhost:8080 -H 'X-Forwarded-User: admin@test.example'
+```
+
 # Building
 
 ## For local run

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -40,7 +41,9 @@ type Binding struct {
 // HeadersConfig type to be loaded in the configuration
 // (must be exported for yaml unmarshalling)
 type HeadersConfig struct {
-	AuthUser        string   `yaml:"auth-user"`
+	AuthUser        string `yaml:"auth-user"`
+	BearerTokenPath string `yaml:"impersonator-token"`
+	BearerToken     string
 	ToForward       []string `yaml:"to-forward"`
 	toForwardOnce   sync.Once
 	toForwardLookup map[string]bool // for performance reasons
@@ -99,6 +102,16 @@ func readConfig(path string, cfg *Config) {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
+
+	readToken(cfg.Server.Headers.BearerTokenPath, cfg)
+}
+
+func readToken(path string, cfg *Config) {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	cfg.Server.Headers.BearerToken = string(content)
 }
 
 func readEnv(cfg *Config) {
@@ -160,12 +173,37 @@ func (c *controller) doAuth(w http.ResponseWriter, users []string, respHeaders m
 			w.Header().Add(k, header)
 		}
 	}
-	// TODO: check if any (should be just one, at most) user has a service account and map it to a ServiceAccount bearer token
 
-	// if no service account, accept auth but do not enrich with bearer token (i.e. skip)
+	// check if any (should be just one, at most) user has a binding, and if so impersonate it
+	for _, user := range users {
+		for _, b := range cfg.Bindings {
+			if b.User != "" && b.User == user {
+				c.impersonate(b, w)
+				return
+			}
+		}
+	}
+
+	// if no account to impersonate, accept auth but do not enrich with bearer token (i.e. skip)
 	c.skip(w)
 }
 
+func (c *controller) impersonate(b Binding, w http.ResponseWriter) {
+	c.logger.Printf(`msg="impersonating", binding="%+v"`, b)
+	user := b.ServiceAccount
+
+	if b.UserAccount != "" {
+		user = b.UserAccount
+	}
+
+	if user == "" {
+		c.logger.Print(`msg="cannot impersonate user without account defined, please review configs"`)
+		c.skip(w)
+	} else {
+		w.Header().Add("Authorization", "Bearer "+cfg.Server.Headers.BearerToken)
+		w.Header().Add("Impersonate-User", user)
+	}
+}
 func (c *controller) reject(w http.ResponseWriter) {
 	c.logger.Print(`msg="request blocked"`)
 	w.WriteHeader(http.StatusUnauthorized)
